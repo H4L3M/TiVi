@@ -3,7 +3,6 @@ package com.nokhbativi.ui.screen
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.runtime.Composable
@@ -11,9 +10,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import com.nokhbativi.ui.main.MainViewModel
-import com.nokhbativi.ui.single.SingleChannel
+import com.nokhbativi.ui.single.SingleChannelHorizontal
 
 @Composable
 fun ListChannels(code: String?, mainViewModel: MainViewModel) {
@@ -23,13 +21,12 @@ fun ListChannels(code: String?, mainViewModel: MainViewModel) {
     val context = LocalContext.current
     LazyVerticalGrid(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp),
+            .fillMaxSize(),
         columns = GridCells.Fixed(1)
     ) {
         items(channels.size) { index ->
             val channel = channels[index]
-            SingleChannel(
+            SingleChannelHorizontal(
                 channel = channel,
                 onClick = { stream ->
                     val intent = Intent(Intent.ACTION_VIEW)

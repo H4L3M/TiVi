@@ -1,33 +1,29 @@
 package com.nokhbativi.ui.screen
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.nokhbativi.model.database.DatabaseCountry
-import com.nokhbativi.ui.single.SingleCountry
+import com.nokhbativi.model.database.DatabaseCategory
+import com.nokhbativi.ui.single.SingleCountryHorizontal
 
 @ExperimentalMaterialApi
 @Composable
-fun TiViScreen(countries: List<DatabaseCountry>, onClick: (name: String, code: String) -> Unit) {
+fun TiViScreen(countries: List<DatabaseCategory>, onClick: (name: String, code: String) -> Unit) {
     LazyVerticalGrid(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp),
-        columns = GridCells.Fixed(3)
+            .fillMaxSize(),
+        columns = GridCells.Fixed(1)
     ) {
         items(countries) { country ->
-            SingleCountry(
-                country = country,
-                onClick = { name, code ->
-                    onClick(name, code)
-                }
-            )
+            SingleCountryHorizontal(
+                country = country
+            ) { name, code ->
+                onClick(name, code)
+            }
         }
     }
 }

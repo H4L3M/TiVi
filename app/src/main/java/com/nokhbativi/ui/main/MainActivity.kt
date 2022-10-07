@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.nokhbativi.ui.main
 
@@ -37,19 +37,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.nokhbativi.R
 import com.nokhbativi.ui.navigation.NavBar
 import com.nokhbativi.ui.navigation.Screen
 import com.nokhbativi.ui.navigation.screens
-import com.nokhbativi.ui.screen.AccountScreen
 import com.nokhbativi.ui.screen.HomeScreen
 import com.nokhbativi.ui.screen.ListChannels
+import com.nokhbativi.ui.screen.LiveEvents
 import com.nokhbativi.ui.screen.TiViScreen
 import com.nokhbativi.ui.theme.TiViTheme
+import com.nokhbativi.worker.FirestoreDataWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -59,102 +62,112 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val request: WorkRequest = OneTimeWorkRequestBuilder<FirestoreDataWorker>().build()
+        WorkManager.getInstance(applicationContext).enqueue(request)
+
         setContent {
             TiViTheme {
                 TiViApp(mainViewModel = mvm)
             }
         }
     }
+}
 
-    @Composable
-    fun TiViApp(mainViewModel: MainViewModel) {
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun TiViApp(mainViewModel: MainViewModel) {
 
-        var mCode by rememberSaveable { mutableStateOf("") }
-        var mName by rememberSaveable { mutableStateOf("") }
-        val countries by mainViewModel.countries.collectAsState(initial = listOf())
+    var mCode by rememberSaveable { mutableStateOf("") }
+    var mName by rememberSaveable { mutableStateOf("") }
 
-        val coroutineScope = rememberCoroutineScope()
-        val navController = rememberNavController()
+    val countries by mainViewModel.categories("COU").collectAsState(initial = listOf())
 
-        val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val events by mainViewModel.liveEvents.collectAsState(initial = listOf())
 
-        BackHandler(sheetState.isVisible) { coroutineScope.launch { sheetState.hide() } }
+    val coroutineScope = rememberCoroutineScope()
+    val navController = rememberNavController()
 
-        ModalBottomSheetLayout(
-            sheetState = sheetState,
-            sheetBackgroundColor = MaterialTheme.colorScheme.background,
-            sheetContent = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = mName,
-                        )
-                    },
-                    colors = TopAppBarDefaults.smallTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    ),
-                    navigationIcon = {
-                        IconButton(
-                            colors = IconButtonDefaults.iconButtonColors(
-                            ),
-                            onClick = {
-                                coroutineScope.launch { sheetState.hide() }
-                            },
-                        ) {
-                            Icon(Icons.Rounded.Close, null)
-                        }
-                    },
-                )
-                ListChannels(code = mCode, mainViewModel = mainViewModel)
-            }) {
-            Scaffold(modifier = Modifier.fillMaxSize(),
-                contentColor = MaterialTheme.colorScheme.surface,
-                topBar = {
-                    TopAppBar(
-                        title = {
-                            Text(
-                                text = stringResource(id = R.string.app_name),
-                            )
-                        },
-                        colors = TopAppBarDefaults.smallTopAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        )
+    val sheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+
+    BackHandler(sheetState.isVisible) { coroutineScope.launch { sheetState.hide() } }
+
+    ModalBottomSheetLayout(sheetState = sheetState,
+        sheetBackgroundColor = MaterialTheme.colorScheme.background,
+        sheetContent = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = mName,
                     )
                 },
-                bottomBar = {
-                    NavBar(navController = navController)
-                }) { paddingValues ->
-
-                Column(Modifier.padding(paddingValues = paddingValues)) {
-
-                    NavHost(
-                        navController = navController, startDestination = Screen.Categories.route
+                colors = TopAppBarDefaults.smallTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                navigationIcon = {
+                    IconButton(
+                        colors = IconButtonDefaults.iconButtonColors(
+                        ),
+                        onClick = {
+                            coroutineScope.launch { sheetState.hide() }
+                        },
                     ) {
-                        screens.forEach { screen ->
-                            when (screen.route) {
-                                Screen.Home.route -> {
-                                    composable(route = screen.route) {
-                                        HomeScreen()
-                                    }
-                                }
+                        Icon(Icons.Rounded.Close, null)
+                    }
+                },
+            )
+            ListChannels(code = mCode, mainViewModel = mainViewModel)
+        }) {
+        Scaffold(modifier = Modifier.fillMaxSize(),
+            contentColor = MaterialTheme.colorScheme.surface,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(text = stringResource(id = R.string.app_name))
+                    },
+//                        navigationIcon = {
+//                            Icon(
+//                                painter = painterResource(id = R.drawable.banner_logo),
+//                                contentDescription = null
+//                            )
+//                        },
+                    colors = TopAppBarDefaults.smallTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+            },
+            bottomBar = {
+                NavBar(navController = navController)
+            }) { paddingValues ->
+            Column(Modifier.padding(paddingValues = paddingValues)) {
 
-                                Screen.Categories.route -> {
-                                    composable(route = screen.route) {
-                                        TiViScreen(countries = countries) { name, code ->
-                                            mName = name
-                                            mCode = code
-                                            coroutineScope.launch {
-                                                delay(50)
-                                                sheetState.show()
-                                            }
+                NavHost(
+                    navController = navController, startDestination = Screen.Home.route
+                ) {
+                    screens.forEach { screen ->
+                        when (screen.route) {
+                            Screen.Home.route -> {
+                                composable(route = screen.route) {
+                                    HomeScreen()
+                                }
+                            }
+
+                            Screen.Categories.route -> {
+                                composable(route = screen.route) {
+                                    TiViScreen(countries = countries) { name, code ->
+                                        mName = name
+                                        mCode = code
+                                        coroutineScope.launch {
+                                            delay(50)
+                                            sheetState.show()
                                         }
                                     }
                                 }
+                            }
 
-                                Screen.Account.route -> {
-                                    composable(route = screen.route) {
-                                        AccountScreen()
-                                    }
+                            Screen.Account.route -> {
+                                composable(route = screen.route) {
+                                    LiveEvents(events = events)
                                 }
                             }
                         }

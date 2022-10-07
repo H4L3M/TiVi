@@ -5,33 +5,32 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "channels")
+@Entity(tableName = "Channels")
 data class DatabaseChannel(
     @PrimaryKey
-    var id: Int,
+    val id: Long, // 999999
     @Embedded
-    var name: Name,
-    var logo: String,
+    val name: Name,
+    val logo: String,
     @Embedded
-    var code: Code,
+    val code: Code,
+    val stream: String,
+    val priority: Int,
     @ColumnInfo(name = "user_agent")
-    var userAgent: String?,
-    var stream: String?,
-    var status: String?,
-    @ColumnInfo(name = "is_new")
-    var isNew: Boolean,
-    var visible: Boolean,
+    val userAgent: String, // www.yacineapp.tv
+    val visible: Boolean, // false
 ) {
-
     data class Name(
-        var ar: String?,
-        var en: String?,
+        @ColumnInfo(name = "name_ar")
+        val ar: String, // بيين 9
+        @ColumnInfo(name = "name_en")
+        val en: String // Bein Sports 9
     )
 
     data class Code(
-        var country: String?,
-        var category: String?,
+        val country: String,
         @ColumnInfo(name = "package")
-        var pack: String?,
+        val pack: String, // SP
+        val category: String // SP
     )
 }

@@ -59,8 +59,8 @@ fun TiViTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-    val view = LocalView.current
-    val window = (view.context as Activity).window
+//    val view = LocalView.current
+//    val window = (view.context as Activity).window
 //    if (!view.isInEditMode) {
 //        SideEffect {
 ////            window.statusBarColor = colorScheme.primary.toArgb()

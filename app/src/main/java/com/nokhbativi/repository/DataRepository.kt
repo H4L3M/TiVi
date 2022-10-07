@@ -1,34 +1,48 @@
 package com.nokhbativi.repository
 
-import android.util.Log
-import com.nokhbativi.database.TiViDatabase
+import com.nokhbativi.database.AppDatabase
 import com.nokhbativi.dto.asDatabaseModel
+import com.nokhbativi.model.network.FirestoreCategory
+import com.nokhbativi.model.network.FirestoreChannel
 import com.nokhbativi.network.RetroNet
+import com.nokhbativi.util.CATEGORIES
+import com.nokhbativi.util.CHANNELS
+import com.nokhbativi.util.get
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class DataRepository @Inject constructor(private val database: TiViDatabase) {
+class DataRepository @Inject constructor(private val database: AppDatabase) {
 
-    val countries = database.dao.getCategories()
+    val liveEvents = database.appDao.getLiveEvents()
 
-    fun channels(code: String?) = database.dao.getChannels(code = code)
+    fun categories(type: String) = database.appDao.getCategories(type = type)
 
-    suspend fun refresh() {
+    fun channels(code: String?) = database.appDao.getChannels(code = code)
 
+    suspend fun refreshLiveEvents() {
         withContext(Dispatchers.IO) {
+            database.appDao.deleteAllEvents()
+            val liveEvents = RetroNet.networkSoccerApi.getLiveEvents()
+            database.appDao.insertLiveEvents(*liveEvents.asDatabaseModel())
+        }
+    }
+    suspend fun refreshCategories() {
+        database.appDao.deleteAllCategories()
+        get<FirestoreCategory>(CATEGORIES).collect { categories ->
+            categories.forEach { category ->
+                database.appDao.insertCategories(category.asDatabaseModel())
+            }
+        }
+    }
 
-            try {
-                val categories = RetroNet.networkTiViApi.getCountries()
-                database.dao.insertCategories(*categories.asDatabaseModel())
-
-                val channels = RetroNet.networkTiViApi.getChannels()
-                database.dao.insertChannels(*channels)
-
-            } catch (e: Exception) {
-                Log.d("ELITE", e.message.toString())
+    suspend fun refreshChannels() {
+        database.appDao.deleteAllChannels()
+        get<FirestoreChannel>(CHANNELS).collect { channels ->
+            channels.forEach { channel ->
+                database.appDao.insertChannels(channel.asDatabaseModel())
             }
         }
     }

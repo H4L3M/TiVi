@@ -1,6 +1,6 @@
 package com.nokhbativi.di
 
-import com.nokhbativi.database.TiViDatabase
+import com.nokhbativi.database.AppDatabase
 import com.nokhbativi.repository.DataRepository
 import dagger.Module
 import dagger.Provides
@@ -15,10 +15,10 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideDao(tiViDatabase: TiViDatabase) = tiViDatabase.dao
+    fun provideDao(tiViDatabase: AppDatabase) = tiViDatabase.appDao
 
     @Singleton
     @Provides
-    fun provideRepository(database: TiViDatabase) = DataRepository(database = database)
+    fun provideRepository(database: AppDatabase) = DataRepository(database = database)
 
 }

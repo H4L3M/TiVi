@@ -1,51 +1,124 @@
 package com.nokhbativi.dto
 
-import com.nokhbativi.model.database.DatabaseCountry
-import com.nokhbativi.network.NetworkCategoriesContainer
+import com.nokhbativi.model.database.DatabaseCategory
+import com.nokhbativi.model.database.DatabaseChannel
+import com.nokhbativi.model.database.DatabaseLiveEvent
+import com.nokhbativi.model.network.FirestoreCategory
+import com.nokhbativi.model.network.FirestoreChannel
+import com.nokhbativi.network.NetworkLiveEventsContainer
 
-fun NetworkCategoriesContainer.asDatabaseModel(): Array<DatabaseCountry> {
-    return countries.map { country ->
-        DatabaseCountry(
-            id = country.id,
-            flag = country.flag,
-            code = DatabaseCountry.Code(
-                alpha2 = country.code.alpha2,
-                alpha3 = country.code.alpha3,
-                dial = country.code.dial,
+fun NetworkLiveEventsContainer.asDatabaseModel(): Array<DatabaseLiveEvent> {
+    return events.map {
+        DatabaseLiveEvent(
+            id = it.id,
+            coverage = it.coverage,
+            winnerCode = it.winnerCode,
+            awayRedCards = it.awayRedCards,
+            homeRedCards = it.homeRedCards,
+            startTimestamp = it.startTimestamp,
+            lastPeriod = it.lastPeriod,
+            time = DatabaseLiveEvent.Time(
+                max = it.time.max,
+                extra = it.time.extra,
+                initial = it.time.initial,
+                injuryTime1 = it.time.injuryTime1,
+                currentPeriodStartTimestamp = it.time.currentPeriodStartTimestamp,
             ),
-            name = DatabaseCountry.Name(
-                ar = country.name.ar,
-                bg = country.name.bg,
-                cs = country.name.cs,
-                da = country.name.da,
-                de = country.name.de,
-                el = country.name.el,
-                en = country.name.en,
-                eo = country.name.eo,
-                es = country.name.es,
-                et = country.name.et,
-                eu = country.name.eu,
-                fi = country.name.fi,
-                fr = country.name.fr,
-                hu = country.name.hu,
-                hy = country.name.hy,
-                it = country.name.it,
-                ja = country.name.ja,
-                ko = country.name.ko,
-                lt = country.name.lt,
-                nl = country.name.nl,
-                no = country.name.no,
-                pl = country.name.pl,
-                pt = country.name.pt,
-                ro = country.name.ro,
-                ru = country.name.ru,
-                sk = country.name.sk,
-                sv = country.name.sv,
-                th = country.name.th,
-                uk = country.name.uk,
-                zh = country.name.zh,
+            status = DatabaseLiveEvent.Status(
+                code = it.status.code,
+                type = it.status.type,
+                description = it.status.description,
             ),
-            visible = country.visible
+            homeTeam = DatabaseLiveEvent.HomeTeam(
+                id = it.homeTeam.id,
+                name = it.homeTeam.name,
+                nameCode = it.homeTeam.nameCode,
+                shortName = it.homeTeam.shortName,
+                type = it.homeTeam.type,
+                userCount = it.homeTeam.userCount,
+                disabled = it.homeTeam.disabled,
+                national = it.homeTeam.national
+            ),
+            awayTeam = DatabaseLiveEvent.AwayTeam(
+                id = it.awayTeam.id,
+                name = it.awayTeam.name,
+                nameCode = it.awayTeam.nameCode,
+                shortName = it.awayTeam.shortName,
+                type = it.awayTeam.type,
+                userCount = it.awayTeam.userCount,
+                disabled = it.awayTeam.disabled,
+                national = it.awayTeam.national
+            ),
+            homeScore = DatabaseLiveEvent.HomeScore(
+                current = it.homeScore.current,
+                display = it.homeScore.display,
+                period1 = it.homeScore.period1,
+                normaltime = it.homeScore.normaltime
+            ),
+            awayScore = DatabaseLiveEvent.AwayScore(
+                current = it.awayScore.current,
+                display = it.awayScore.display,
+                period1 = it.awayScore.period1,
+                normaltime = it.awayScore.normaltime
+            ),
+            roundInfo = DatabaseLiveEvent.RoundInfo(round = it.roundInfo?.round),
+            tournament = DatabaseLiveEvent.Tournament(
+                id = it.tournament.id,
+                name = it.tournament.name,
+                priority = it.tournament.priority,
+//                category = DatabaseLiveEvent.Tournament.Category(
+//                    id = it.tournament.category.id,
+//                    name = it.tournament.category.name,
+//                    flag = it.tournament.category.flag,
+//                    alpha2 = it.tournament.category.alpha2,
+//                ),
+                uniqueTournament = DatabaseLiveEvent.Tournament.UniqueTournament(
+                    id = it.tournament.uniqueTournament?.id,
+                    name = it.tournament.uniqueTournament?.name,
+                    userCount = it.tournament.uniqueTournament?.userCount,
+                    hasPositionGraph = it.tournament.uniqueTournament?.hasPositionGraph ?: false,
+                    hasEventPlayerStatistics = it.tournament.uniqueTournament?.hasEventPlayerStatistics
+                        ?: false,
+                    displayInverseHomeAwayTeams = it.tournament.uniqueTournament?.displayInverseHomeAwayTeams
+                        ?: false
+                ),
+            ),
+            statusTime = null,
+            finalResultOnly = it.finalResultOnly,
+            hasGlobalHighlights = it.hasGlobalHighlights,
+            hasEventPlayerHeatMap = it.hasEventPlayerHeatMap,
+            hasEventPlayerStatistics = it.hasEventPlayerStatistics
         )
     }.toTypedArray()
+}
+
+fun FirestoreCategory.asDatabaseModel(): DatabaseCategory {
+    return DatabaseCategory(
+        id = this.id ?: 0,
+        logo = this.logo ?: "",
+        code = DatabaseCategory.Code(
+            alpha = this.code?.alpha.toString(),
+            type = this.code?.type.toString()
+        ),
+        name = DatabaseCategory.Name(ar = this.name?.ar ?: "", en = this.name?.en ?: ""),
+        priority = this.priority ?: 0,
+        visible = this.visible ?: false
+    )
+}
+
+fun FirestoreChannel.asDatabaseModel(): DatabaseChannel {
+    return DatabaseChannel(
+        id = this.id ?: 0,
+        name = DatabaseChannel.Name(ar = this.name?.ar ?: "", en = this.name?.en ?: ""),
+        logo = this.logo ?: "",
+        code = DatabaseChannel.Code(
+            country = this.code?.country.toString(),
+            pack = this.code?.pack.toString(),
+            category = this.code?.category.toString()
+        ),
+        stream = this.stream.toString(),
+        priority = this.priority ?: 0,
+        userAgent = this.userAgent.toString(),
+        visible = this.visible ?: false
+    )
 }

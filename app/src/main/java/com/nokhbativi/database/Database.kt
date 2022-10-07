@@ -4,36 +4,39 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.nokhbativi.dao.TiViDao
+import com.nokhbativi.dao.AppDao
 import com.nokhbativi.model.database.DatabaseChannel
-import com.nokhbativi.model.database.DatabaseCountry
+import com.nokhbativi.model.database.DatabaseLiveEvent
+import com.nokhbativi.model.database.DatabaseCategory
 import javax.inject.Singleton
 
 @Database(
     entities = [
-        DatabaseCountry::class,
-        DatabaseChannel::class
+        DatabaseCategory::class,
+        DatabaseChannel::class,
+        DatabaseLiveEvent::class
     ],
     version = 1,
     exportSchema = false
 )
 
-abstract class TiViDatabase : RoomDatabase() {
-    abstract val dao: TiViDao
+abstract class AppDatabase : RoomDatabase() {
+    abstract val appDao: AppDao
 }
 
 @Volatile
-private lateinit var INSTANCE: TiViDatabase
+private lateinit var INSTANCE: AppDatabase
 
 @Singleton
-fun getDatabase(context: Context): TiViDatabase {
-    synchronized(TiViDatabase::class.java) {
+fun getDatabase(context: Context): AppDatabase {
+    synchronized(AppDatabase::class.java) {
         if (!::INSTANCE.isInitialized) {
             INSTANCE = Room.databaseBuilder(
                 context.applicationContext,
-                TiViDatabase::class.java,
-                "TiVi"
-            ).fallbackToDestructiveMigration()
+                AppDatabase::class.java,
+                "database"
+            )
+//                .allowMainThreadQueries()
                 .build()
         }
     }

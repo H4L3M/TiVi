@@ -1,4 +1,5 @@
 plugins {
+    application
     id("com.android.application") version "8.0.0-alpha02" apply false
     id("com.android.library") version "8.0.0-alpha02" apply false
     id("org.jetbrains.kotlin.android") version "1.7.10" apply false
@@ -8,16 +9,11 @@ plugins {
 }
 
 buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-
+    repositories { mavenCentral() }
     dependencies {
-//        classpath("com.google.dagger:hilt-android-gradle-plugin:2.42")
         classpath ("com.google.gms:google-services:4.3.14")
-//        val kotlinVersion = "1.7.10"
-//        classpath(kotlin("gradle-plugin", version = kotlinVersion))
-//        classpath(kotlin("serialization", version = kotlinVersion))
+        val kotlinVersion = "1.7.10"
+        classpath(kotlin("gradle-plugin", version = kotlinVersion))
+        classpath(kotlin("serialization", version = kotlinVersion))
     }
 }
