@@ -1,7 +1,7 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.nokhbativi.ui.single
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,39 +17,34 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.nokhbativi.model.database.DatabaseLiveEvent
-import com.nokhbativi.network.TiViBaseUrl
+import com.nokhbativi.data.network.SoccerBaseUrl
 import com.nokhbativi.util.IMAGE
 import com.nokhbativi.util.TEAM
 import com.nokhbativi.util.commit
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
-fun SingleEvent(event: DatabaseLiveEvent?) {
+fun SingleEvent(event: DatabaseLiveEvent, modifier: Modifier = Modifier) {
     Card(
         modifier = Modifier
-            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .padding(vertical = 2.dp)
             .fillMaxWidth()
-            .height(72.dp)
-            .clickable {
-
-            }
-            .focusable(enabled = true),
-        shape = RoundedCornerShape(8.dp),
+            .height(64.dp)
+            .padding(horizontal = 16.dp),
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = 0.dp
+        ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(
-            focusedElevation = 4.dp, hoveredElevation = 2.dp
-        ),
-        onClick = {
-
-        }
+        shape = RoundedCornerShape(12.dp),
+        onClick = {}
     ) {
         ConstraintLayout(
             modifier = Modifier.fillMaxWidth()
@@ -57,21 +52,27 @@ fun SingleEvent(event: DatabaseLiveEvent?) {
 
             val (homeName, homeLogo, homeScore, spacer, awayScore, awayLogo, awayName) = createRefs()
             TeamTitle(
-                modifier = Modifier.constrainAs(homeName) {
+                modifier = modifier.constrainAs(homeName) {
                     top.linkTo(homeLogo.top)
                     end.linkTo(homeLogo.start)
                     bottom.linkTo(homeLogo.bottom)
-                }, name = event!!.homeTeam.shortName
+                },
+                name = event.homeTeam.shortName
             )
-            CoilImage(data = TiViBaseUrl.plus(TEAM).plus(event.homeTeam.id).plus(IMAGE),
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(4.dp)
+            Spacer(Modifier.width(16.dp))
+            Image(
+                modifier = modifier
+                    .size(56.dp)
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(8.dp))
                     .constrainAs(homeLogo) {
                         top.linkTo(homeScore.top)
                         end.linkTo(homeScore.start)
                         bottom.linkTo(homeScore.bottom)
-                    })
+                    },
+                data = SoccerBaseUrl.plus(TEAM).plus(event.homeTeam.id).plus(IMAGE),
+            )
+            Spacer(Modifier.width(16.dp))
             Text(
                 modifier = Modifier.constrainAs(homeScore) {
                     top.linkTo(spacer.top)
@@ -80,7 +81,7 @@ fun SingleEvent(event: DatabaseLiveEvent?) {
                 }, text = event.homeScore.display.commit()
             )
             Spacer(modifier = Modifier
-                .width(48.dp)
+                .width(16.dp)
                 .fillMaxHeight()
                 .constrainAs(spacer) {
                     start.linkTo(parent.start)
@@ -95,25 +96,27 @@ fun SingleEvent(event: DatabaseLiveEvent?) {
                     bottom.linkTo(spacer.bottom)
                 }, text = event.awayScore.display.commit()
             )
-            CoilImage(
-                data = TiViBaseUrl.plus(TEAM)
-                    .plus(event.awayTeam.id)
-                    .plus(IMAGE),
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(4.dp)
+            Spacer(Modifier.width(16.dp))
+            Image(
+                modifier = modifier
+                    .size(56.dp)
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(8.dp))
                     .constrainAs(awayLogo) {
                         start.linkTo(awayScore.end)
                         top.linkTo(awayScore.top)
                         bottom.linkTo(awayScore.bottom)
                     },
+                data = SoccerBaseUrl.plus(TEAM).plus(event.awayTeam.id).plus(IMAGE),
             )
+            Spacer(Modifier.width(16.dp))
             TeamTitle(
-                modifier = Modifier.constrainAs(awayName) {
+                modifier = modifier.constrainAs(awayName) {
                     start.linkTo(awayLogo.end)
                     top.linkTo(awayLogo.top)
                     bottom.linkTo(awayLogo.bottom)
-                }, name = event.awayTeam.shortName
+                },
+                name = event.awayTeam.shortName
             )
         }
     }
@@ -129,10 +132,4 @@ fun TeamTitle(modifier: Modifier, name: String) {
         maxLines = 2,
         softWrap = true
     )
-}
-
-@Preview
-@Composable
-fun SingleEventPrev() {
-    SingleEvent(null)
 }

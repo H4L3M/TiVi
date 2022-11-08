@@ -1,7 +1,7 @@
 package com.nokhbativi.di
 
-import com.nokhbativi.database.AppDatabase
-import com.nokhbativi.repository.DataRepository
+import com.nokhbativi.data.database.AppDatabase
+import com.nokhbativi.data.repository.DataRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

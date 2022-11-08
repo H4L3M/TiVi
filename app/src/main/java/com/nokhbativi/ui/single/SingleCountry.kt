@@ -15,14 +15,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.shimmer
+import com.google.accompanist.placeholder.placeholder
 import com.nokhbativi.model.database.DatabaseCategory
 import com.nokhbativi.util.imgur
 
 @Composable
-fun SingleCountryHorizontal(country: DatabaseCategory, onClick: (name: String, code: String) -> Unit) {
+fun SingleCountryHorizontal(
+    country: DatabaseCategory,
+    onClick: (name: String, code: String) -> Unit
+) {
     Card(
         modifier = Modifier
             .padding(vertical = 2.dp)
@@ -36,11 +43,11 @@ fun SingleCountryHorizontal(country: DatabaseCategory, onClick: (name: String, c
             containerColor = MaterialTheme.colorScheme.surface
         ),
         shape = RoundedCornerShape(12.dp),
-        onClick = { onClick(country.name.en ,country.code.alpha) }
+        onClick = { onClick(country.name.en, country.code.alpha) }
     ) {
         ConstraintLayout {
             val (logo, name) = createRefs()
-            CoilImage(
+            Image(
                 modifier = Modifier
                     .size(56.dp)
                     .padding(8.dp)
@@ -50,11 +57,16 @@ fun SingleCountryHorizontal(country: DatabaseCategory, onClick: (name: String, c
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)
                     },
-                data = if(country.logo.length == 7) country.logo.imgur() else country.logo
+                data = if (country.logo.length == 7) country.logo.imgur() else country.logo
             )
             Text(
                 modifier = Modifier
                     .padding(start = 4.dp)
+                    .placeholder(
+                        color = Color.Gray,
+                        visible = false,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
                     .constrainAs(name) {
                         start.linkTo(logo.end)
                         top.linkTo(logo.top)

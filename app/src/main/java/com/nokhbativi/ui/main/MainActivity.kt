@@ -1,174 +1,177 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 
 package com.nokhbativi.ui.main
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.res.stringResource
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.WorkRequest
 import com.nokhbativi.R
+import com.nokhbativi.ads.UnityAdManager
+import com.nokhbativi.connectivity.ConnectivityObserver
+import com.nokhbativi.connectivity.NetworkConnectivityObserver
+import com.nokhbativi.ui.list.ListChannels
+import com.nokhbativi.ui.list.ListCountries
+import com.nokhbativi.ui.list.ListLiveEvents
 import com.nokhbativi.ui.navigation.NavBar
 import com.nokhbativi.ui.navigation.Screen
 import com.nokhbativi.ui.navigation.screens
 import com.nokhbativi.ui.screen.HomeScreen
-import com.nokhbativi.ui.screen.ListChannels
-import com.nokhbativi.ui.screen.LiveEvents
-import com.nokhbativi.ui.screen.TiViScreen
 import com.nokhbativi.ui.theme.TiViTheme
-import com.nokhbativi.worker.FirestoreDataWorker
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val mvm by viewModels<MainViewModel>()
+    private lateinit var connectivityObserver: NetworkConnectivityObserver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val request: WorkRequest = OneTimeWorkRequestBuilder<FirestoreDataWorker>().build()
-        WorkManager.getInstance(applicationContext).enqueue(request)
+        installSplashScreen()
 
         setContent {
+            connectivityObserver = NetworkConnectivityObserver(this)
+
+            val status by connectivityObserver.observe().collectAsState(
+                initial = ConnectivityObserver.Status.Unavailable
+            )
+
+            when(status){
+                ConnectivityObserver.Status.Unavailable -> {
+                    Toast.makeText(this, "Unavailable", Toast.LENGTH_SHORT).show()
+                }
+                ConnectivityObserver.Status.Available -> {
+                    Toast.makeText(this, "Available", Toast.LENGTH_SHORT).show()
+                }
+                ConnectivityObserver.Status.Losing -> {
+                    Toast.makeText(this, "Losing", Toast.LENGTH_SHORT).show()
+                }
+                ConnectivityObserver.Status.Lost -> {
+                    Toast.makeText(this, "Lost", Toast.LENGTH_SHORT).show()
+                }
+            }
             TiViTheme {
-                TiViApp(mainViewModel = mvm)
+                TiViApp()
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun TiViApp(mainViewModel: MainViewModel) {
+fun TiViApp() {
 
     var mCode by rememberSaveable { mutableStateOf("") }
     var mName by rememberSaveable { mutableStateOf("") }
 
-    val countries by mainViewModel.categories("COU").collectAsState(initial = listOf())
-
-    val events by mainViewModel.liveEvents.collectAsState(initial = listOf())
-
     val coroutineScope = rememberCoroutineScope()
     val navController = rememberNavController()
 
-    val sheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
 
-    BackHandler(sheetState.isVisible) { coroutineScope.launch { sheetState.hide() } }
-
-    ModalBottomSheetLayout(sheetState = sheetState,
+    ModalBottomSheetLayout(
+        sheetState = sheetState,
         sheetBackgroundColor = MaterialTheme.colorScheme.background,
         sheetContent = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = mName,
-                    )
-                },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                ),
-                navigationIcon = {
-                    IconButton(
-                        colors = IconButtonDefaults.iconButtonColors(
-                        ),
-                        onClick = {
-                            coroutineScope.launch { sheetState.hide() }
-                        },
-                    ) {
-                        Icon(Icons.Rounded.Close, null)
-                    }
-                },
-            )
-            ListChannels(code = mCode, mainViewModel = mainViewModel)
-        }) {
+            BottomSheetTopAppBar(sheetState, coroutineScope, mName)
+            ListChannels(code = mCode)
+        },
+        scrimColor = MaterialTheme.colorScheme.scrim
+    ) {
         Scaffold(modifier = Modifier.fillMaxSize(),
             contentColor = MaterialTheme.colorScheme.surface,
             topBar = {
                 TopAppBar(
-                    title = {
-                        Text(text = stringResource(id = R.string.app_name))
-                    },
-//                        navigationIcon = {
-//                            Icon(
-//                                painter = painterResource(id = R.drawable.banner_logo),
-//                                contentDescription = null
-//                            )
-//                        },
+                    title = { Text(text = stringResource(id = R.string.app_name)) },
                     colors = TopAppBarDefaults.smallTopAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primary
-                    )
+                    ),
+//                    actions = {
+//                        val isDark by readSettings(context).collectAsState(initial = false)
+//                        Switch(
+//                            checked = isDark,
+//                            onCheckedChange = {
+////                            checked = it
+//                                coroutineScope.launch {
+//                                    setDarkMode(context = context, isDark = it)
+//                                }
+//                            },
+//                            thumbContent = { Icon(imageVector = Icons.Rounded.Close, contentDescription = null)}
+//                        )
+//                    }
                 )
             },
             bottomBar = {
                 NavBar(navController = navController)
             }) { paddingValues ->
-            Column(Modifier.padding(paddingValues = paddingValues)) {
 
-                NavHost(
-                    navController = navController, startDestination = Screen.Home.route
-                ) {
-                    screens.forEach { screen ->
+            BackHandler(enabled = sheetState.isVisible) {
+                coroutineScope.launch {
+                    sheetState.hide()
+                }
+            }
+
+            NavHost(
+                modifier = Modifier
+                    .padding(paddingValues = paddingValues)
+                    .clipToBounds(),
+                navController = navController,
+                startDestination = Screen.Home.route
+            ) {
+                screens.forEach { screen ->
+                    composable(route = screen.route) {
                         when (screen.route) {
                             Screen.Home.route -> {
-                                composable(route = screen.route) {
-                                    HomeScreen()
-                                }
-                            }
-
-                            Screen.Categories.route -> {
-                                composable(route = screen.route) {
-                                    TiViScreen(countries = countries) { name, code ->
-                                        mName = name
-                                        mCode = code
-                                        coroutineScope.launch {
-                                            delay(50)
-                                            sheetState.show()
-                                        }
+                                HomeScreen { name, code ->
+                                    mName = name
+                                    mCode = code
+                                    coroutineScope.launch {
+                                        delay(50)
+                                        sheetState.show()
                                     }
                                 }
                             }
 
-                            Screen.Account.route -> {
-                                composable(route = screen.route) {
-                                    LiveEvents(events = events)
+                            Screen.Countries.route -> {
+                                ListCountries { name, code ->
+                                    mName = name
+                                    mCode = code
+                                    coroutineScope.launch {
+                                        delay(50)
+                                        sheetState.show()
+                                    }
                                 }
+                            }
+
+                            Screen.LiveEvents.route -> {
+                                ListLiveEvents()
                             }
                         }
                     }
@@ -176,4 +179,23 @@ fun TiViApp(mainViewModel: MainViewModel) {
             }
         }
     }
+}
+
+@Composable
+fun BottomSheetTopAppBar(
+    sheetState: ModalBottomSheetState, coroutineScope: CoroutineScope, name: String
+) {
+    TopAppBar(
+        title = { Text(text = name) },
+        colors = TopAppBarDefaults.smallTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary
+        ),
+        navigationIcon = {
+            IconButton(
+                onClick = {
+                    coroutineScope.launch { sheetState.hide() }
+                },
+            ) { Icon(Icons.Rounded.Close, null) }
+        },
+    )
 }

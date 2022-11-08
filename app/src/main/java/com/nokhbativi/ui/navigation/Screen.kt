@@ -1,32 +1,25 @@
 package com.nokhbativi.ui.navigation
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+import com.nokhbativi.R
 
-sealed class Screen(val route: String, val icon: ImageVector) {
+sealed class Screen(val route: String, val icon: @Composable (selected: Boolean) -> Painter) {
 
     object Home : Screen(
         route = "Home",
-        icon = Icons.Rounded.Home,
+        icon = { if (it) painterResource(id = R.drawable.solid_home) else painterResource(id = R.drawable.outline_home) },
     )
 
-    object Categories : Screen(
-        route = "TiVi",
-        icon = Icons.Rounded.Favorite,
+    object Countries : Screen(
+        route = "Countries",
+        icon = { if (it) painterResource(id = R.drawable.solid_world) else painterResource(id = R.drawable.outline_world) },
     )
 
-    object Account : Screen(
-        route = "Search",
-        icon = Icons.Rounded.Search,
-    )
-
-    object Channels : Screen(
-        route = "Channels",
-        icon = Icons.Rounded.Info,
+    object LiveEvents : Screen(
+        route = "Events",
+        icon = { if (it) painterResource(id = R.drawable.solid_whistle) else painterResource(id = R.drawable.outline_whistle) },
     )
 
     //if you want to send values

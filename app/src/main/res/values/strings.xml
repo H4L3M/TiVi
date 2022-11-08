@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">TiVi</string>
+    <string name="horiz_pager_title_looping">xx</string>
+    <string name="horiz_pager_title_basics">zzz\n</string>
+    <string name="placeholder_title_shimmer">shimmer\n</string>
+    <string name="play_previous">Previous</string>
+    <string name="rewind_5">Rewind 5</string>
+    <string name="toggle_play">Play</string>
+    <string name="forward_10">Forward 10</string>
+    <string name="play_next">Next</string>
+    <string name="toggle_full_screen">Fullscreen</string>
 </resources>

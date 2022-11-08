@@ -2,6 +2,10 @@
 <resources>
 
     <style name="Theme.NokhbaTiVi" parent="android:Theme.Material.Light.NoActionBar">
-<!--        <item name="android:windowTranslucentStatus">true</item>-->
+    </style>
+    <style name="Theme.EpicWorld.SplashTheme" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#FFFFFF</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_round</item>
+        <item name="postSplashScreenTheme">@style/Theme.NokhbaTiVi</item>
     </style>
 </resources>

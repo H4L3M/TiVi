@@ -1,9 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.nokhbativi.ui.single
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -23,8 +20,9 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import com.nokhbativi.model.database.DatabaseChannel
 import com.nokhbativi.util.imgur
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SingleChannelHorizontal(channel: DatabaseChannel, onClick: (stream: String?) -> Unit) {
+fun SingleChannelHorizontal(channel: DatabaseChannel, onClick: (channel: DatabaseChannel) -> Unit) {
     Card(
         modifier = Modifier
             .padding(2.dp)
@@ -39,12 +37,12 @@ fun SingleChannelHorizontal(channel: DatabaseChannel, onClick: (stream: String?)
         ),
         shape = RoundedCornerShape(12.dp),
         onClick = {
-            onClick(channel.stream)
+            onClick(channel)
         }
     ) {
         ConstraintLayout {
             val (logo, name) = createRefs()
-            CoilImage(
+            Image(
                 modifier = Modifier
                     .size(48.dp)
                     .padding(8.dp)
@@ -55,7 +53,7 @@ fun SingleChannelHorizontal(channel: DatabaseChannel, onClick: (stream: String?)
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)
                     },
-                data = if(channel.logo.length == 7) channel.logo.imgur() else channel.logo
+                data = if (channel.logo.length == 7) channel.logo.imgur() else channel.logo
             )
             Text(
                 modifier = Modifier
@@ -66,7 +64,7 @@ fun SingleChannelHorizontal(channel: DatabaseChannel, onClick: (stream: String?)
                         bottom.linkTo(logo.bottom)
                     },
                 textAlign = TextAlign.Center,
-                text = channel.name.en!!
+                text = channel.name.en
             )
         }
     }

@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "Channels")
 data class DatabaseChannel(
     @PrimaryKey
-    val id: Long, // 999999
+    val id: Long,
     @Embedded
     val name: Name,
     val logo: String,
@@ -17,20 +17,20 @@ data class DatabaseChannel(
     val stream: String,
     val priority: Int,
     @ColumnInfo(name = "user_agent")
-    val userAgent: String, // www.yacineapp.tv
-    val visible: Boolean, // false
+    val userAgent: String,
+    val visible: Boolean,
 ) {
     data class Name(
         @ColumnInfo(name = "name_ar")
-        val ar: String, // بيين 9
+        val ar: String,
         @ColumnInfo(name = "name_en")
-        val en: String // Bein Sports 9
+        val en: String,
     )
 
     data class Code(
         val country: String,
         @ColumnInfo(name = "package")
-        val pack: String, // SP
-        val category: String // SP
+        val pack: String,
+        val category: String,
     )
 }
